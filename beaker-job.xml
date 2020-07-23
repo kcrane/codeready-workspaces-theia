@@ -1,0 +1,29 @@
+<!-- specification:  https://beaker-project.org/docs/_downloads/beaker-job.rng -->
+<!-- documentation:  https://docs.engineering.redhat.com/display/HTD/Documentation+-+Beaker -->
+<job>
+  <whiteboard>
+  codeready-workspaces-theia on ${ARCH}
+  </whiteboard>
+    <recipeSet>
+      <recipe>
+        <distroRequires>
+            <and>
+                <distro_family op="=" value="RedHatEnterpriseLinux8"/>
+		<distro_arch op="=" value="${ARCH}"/>
+            </and>
+        </distroRequires>
+        <hostRequires>
+            <and>
+		<arch op="=" value="${ARCH}"/>
+                <diskspace op=">=" value="20000000000"/>
+            </and>
+        </hostRequires>
+       <task name="/distribution/command">
+            <params>
+		    <param name="CMDS_TO_RUN" value="yum install -y jq curl grep git podman tar sed wget && rpm --import https://dl.yarnpkg.com/rpm/pubkey.gpg && curl -sL https://dl.yarnpkg.com/rpm/yarn.repo -o /etc/yum.repos.d/yarn.repo && yum install -y yarn && wget https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-${NODE_ARCH}.tar.gz && tar xzvf node-v${NODE_VER}-linux-${NODE_ARCH}.tar.gz -C /usr/local && rm -f /usr/bin/node /usr/bin/npm && ln -s /usr/local/node-v${NODE_VER}-linux-${NODE_ARCH}/bin/node /usr/bin && ln -s /usr/local/node-v${NODE_VER}-linux-${NODE_ARCH}/bin/npm /usr/bin && git clone https://github.com/kcrane/codeready-workspaces-theia && cd codeready-workspaces-theia && export GITHUB_TOKEN='${GITHUB_TOKEN}' && ./build.sh --nv ${NODE_VER} --ctb 7.13.x --tb master --tgr eclipse-theia/theia --all --no-tests --no-cache --podman && for f in dockerfiles/theia/*.tar.gz ; do mv $f $(dirname $f)/$(basename $f .tar.gz)-${ARCH}.tar.gz; done &&  ./github-upload.sh -r kcrane/codeready-workspaces-theia -t latest -n 'latest build' master -o dockerfiles/theia/*.tar.gz dockerfiles/theia/*.lock dockerfiles/theia/*.theia"/>
+            </params>
+        </task>
+		<!--	<reservesys when="onfail" /> -->
+      </recipe>
+    </recipeSet>
+</job>
